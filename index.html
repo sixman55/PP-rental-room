@@ -1,0 +1,2790 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotelBooking - ຈອງໂຮງແຮມອອນລາຍ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .hotel-gradient {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<script>
+    // ฟังก์ชันแสดง/ซ่อนหน้า
+    function showPage(pageId) {
+        const pages = ['hotelPage', 'favoritePage', 'historyPage', 'profilePage'];
+        pages.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    // ตัวอย่าง: หน้าໜ້າຫຼັກ
+    document.getElementById('homeTab').addEventListener('click', () => {
+        showPage('hotelPage');
+    });
+
+    // หน้าຮັກ
+    document.getElementById('favoriteTab').addEventListener('click', () => {
+        if (!document.getElementById('favoritePage')) {
+            const fav = document.createElement('div');
+            fav.id = 'favoritePage';
+            fav.className = 'min-h-full pb-20 p-6';
+            fav.innerHTML = `<h1 class="text-2xl font-bold mb-4">💖 ໜ້າຮັກ</h1><p>ລາຍການໂຮງແຮມທີ່ທ່ານບັນທຶກໄວ້ຈະຢູ່ທີ່ນີ້</p>`;
+            document.body.appendChild(fav);
+        }
+        showPage('favoritePage');
+    });
+
+    // หน้าປະຫວັດ
+    document.getElementById('historyTab').addEventListener('click', () => {
+        if (!document.getElementById('historyPage')) {
+            const his = document.createElement('div');
+            his.id = 'historyPage';
+            his.className = 'min-h-full pb-20 p-6';
+            his.innerHTML = `<h1 class="text-2xl font-bold mb-4">🕒 ປະຫວັດ</h1><p>ປະຫວັດການຈອງຈະຢູ່ທີ່ນີ້</p>`;
+            document.body.appendChild(his);
+        }
+        showPage('historyPage');
+    });
+
+    // หน้าໂປຣໄຟລ໌
+    document.getElementById('profileTab').addEventListener('click', () => {
+        if (!document.getElementById('profilePage')) {
+            const pro = document.createElement('div');
+            pro.id = 'profilePage';
+            pro.className = 'min-h-full pb-20 p-6';
+            pro.innerHTML = `<h1 class="text-2xl font-bold mb-4">👤 ໂປຣໄຟລ໌</h1><p>ຂໍ້ມູນຜູ້ໃຊ້ຈະຢູ່ທີ່ນີ້</p>`;
+            document.body.appendChild(pro);
+        }
+        showPage('profilePage');
+    });
+</script>
+
+<body class="min-h-full bg-gray-50 font-sans">
+    <!-- หน้าโหลด -->
+    <div id="loadingPage" class="min-h-full gradient-bg flex items-center justify-center">
+        <div class="text-center text-white fade-in">
+            <div class="pulse-animation mb-8">
+                <svg class="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z"/>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">HotelBooking</h1>
+            <p class="text-xl mb-8">ຄົ້ນຫາແລະຈອງໂຮງແຮມທີ່ດີທີ່ສຸດ</p>
+            <div class="flex justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าล็อกอิน/สร้างบัญชี -->
+    <div id="authPage" class="hidden min-h-full">
+        <header class="gradient-bg text-white p-4">
+            <div class="max-w-md mx-auto flex items-center">
+                <button id="backToLoadingBtn" class="mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h1 class="text-xl font-bold">HotelBooking</h1>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 fade-in">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">ຍິນດີຕ້ອນຮັບ</h2>
+                    <p class="text-gray-600">ເຂົ້າສູ່ລະບົບຫຼືສ້າງບັນຊີໃໝ່</p>
+                </div>
+
+                <!-- แท็บสลับ -->
+                <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                    <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-white text-blue-600 font-medium shadow-sm">
+                        ເຂົ້າສູ່ລະບົບ
+                    </button>
+                    <button id="signupTab" class="flex-1 py-2 px-4 rounded-md text-gray-600 font-medium">
+                        ສ້າງບັນຊີ
+                    </button>
+                </div>
+
+                <!-- ฟอร์มเข้าสู่ระบบ -->
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">ອີເມວ</label>
+                        <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ໃສ່ອີເມວຂອງທ່ານ" required>
+                    </div>
+                    <div>
+                        <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">ລະຫັດຜ່ານ</label>
+                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ໃສ່ລະຫັດຜ່ານ" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200">
+                        ເຂົ້າສູ່ລະບົບ
+                    </button>
+                </form>
+
+                <!-- ฟอร์มสร้างบัญชี -->
+                <form id="signupForm" class="space-y-4 hidden">
+                    <div>
+                        <label for="signupName" class="block text-sm font-medium text-gray-700 mb-1">ຊື່-ນາມສະກຸນ</label>
+                        <input type="text" id="signupName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ໃສ່ຊື່-ນາມສະກຸນ" required>
+                    </div>
+                    <div>
+                        <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-1">ອີເມວ</label>
+                        <input type="email" id="signupEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ໃສ່ອີເມວຂອງທ່ານ" required>
+                    </div>
+                    <div>
+                        <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-1">ລະຫັດຜ່ານ</label>
+                        <input type="password" id="signupPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ສ້າງລະຫັດຜ່ານ" required>
+                    </div>
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">ຢືນຢັນລະຫັດຜ່ານ</label>
+                        <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ຢືນຢັນລະຫັດຜ່ານ" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200">
+                        ສ້າງບັນຊີ
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">ຫຼືເຂົ້າສູ່ລະບົບດ້ວຍ</p>
+                    <div class="flex space-x-4 mt-3">
+                        <button class="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-200">
+                            Google
+                        </button>
+                        <button class="flex-1 bg-blue-800 text-white py-2 px-4 rounded-md hover:bg-blue-900 transition duration-200">
+                            Facebook
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- หน้าค้นหาโรงแรม -->
+    <div id="hotelPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <button id="backToAuthBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">HotelBooking</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">ສະບາຍດີ, ຜູ້ໃຊ້</span>
+                        <button id="logoutBtn" class="bg-white bg-opacity-20 px-3 py-1 rounded-md text-sm hover:bg-opacity-30 transition duration-200">
+                            ອອກຈາກລະບົບ
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-2">ຄົ້ນຫາໂຮງແຮມທີ່ເໝາະກັບທ່ານ</h2>
+                    <p class="text-lg opacity-90">ປຽບທຽບລາຄາແລະຈອງໄດ້ທັນທີ</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4">
+            <!-- ฟอร์มค้นหา -->
+            <div class="bg-white rounded-lg shadow-lg p-6 -mt-8 relative z-10 fade-in">
+                <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">ຈຸດໝາຍ</label>
+                        <input type="text" id="destination" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="ເຊັ່ນ ວຽງຈັນ, ຫຼວງພະບາງ" required>
+                    </div>
+                    <div>
+                        <label for="checkin" class="block text-sm font-medium text-gray-700 mb-1">ວັນເຊັກອິນ</label>
+                        <input type="date" id="checkin" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="checkout" class="block text-sm font-medium text-gray-700 mb-1">ວັນເຊັກເອົາ</label>
+                        <input type="date" id="checkout" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="guests" class="block text-sm font-medium text-gray-700 mb-1">ຈຳນວນຜູ້ເຂົ້າພັກ</label>
+                        <select id="guests" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="1">1 ຜູ້ໃຫຍ່</option>
+                            <option value="2">2 ຜູ້ໃຫຍ່</option>
+                            <option value="3">3 ຜູ້ໃຫຍ່</option>
+                            <option value="4">4 ຜູ້ໃຫຍ່</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-4">
+                        <button type="submit" class="w-full bg-pink-500 text-white py-3 px-6 rounded-md hover:bg-pink-600 transition duration-200 font-medium">
+                            🔍 ຄົ້ນຫາໂຮງແຮມ
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ตัวอย่างโรงแรมแนะนำ -->
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">ໂຮງແຮມທີ່ແນະນຳ</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- โรงแรม 1 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏨 Grand Hotel</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Grand Hotel Vientiane</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ວຽງຈັນ, ລາວ</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.8)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭500,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Grand Hotel Vientiane" data-location="ວຽງຈັນ, ລາວ" data-price="₭500,000" data-rating="4.8">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- โรงแรม 2 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏖️ Beach Resort</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Mekong River Resort</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ຫຼວງພະບາງ, ລາວ</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.5)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭650,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Mekong River Resort" data-location="ຫຼວງພະບາງ, ລາວ" data-price="₭650,000" data-rating="4.5">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- โรงแรม 3 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏔️ Mountain View</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Phou Bia Mountain Hotel</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ວັງວຽງ, ລາວ</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.6)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭360,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Phou Bia Mountain Hotel" data-location="ວັງວຽງ, ລາວ" data-price="₭360,000" data-rating="4.6">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ผลการค้นหา -->
+            <div id="searchResults" class="mt-8 hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">ຜົນການຄົ້ນຫາ</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- ผลการค้นหาจะแสดงที่นี่ -->
+                </div>
+            </div>
+
+            <!-- ข้อมูลเพิ่มเติม -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="font-bold text-lg mb-2">ລາຄາດີທີ່ສຸດ</h3>
+                    <p class="text-gray-600">ປຽບທຽບລາຄາຈາກຫຼາຍເວັບໄຊ</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="font-bold text-lg mb-2">ຈອງງ່າຍ ໄວ</h3>
+                    <p class="text-gray-600">ຈອງໄດ້ໃນບໍ່ກີ່ຄລິກ ຢືນຢັນທັນທີ</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h3 class="font-bold text-lg mb-2">ປອດໄພ ໝັ້ນໃຈ</h3>
+                    <p class="text-gray-600">ລະບົບຮັກສາຄວາມປອດໄພລະດັບສູງ</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- แท็บด้านล่าง -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-around">
+                    <button id="homeTab" class="flex flex-col items-center py-2 px-4 text-pink-500">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໜ້າຫຼັກ</span>
+                    </button>
+
+                    <button id="favoriteTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ຮັກ</span>
+                    </button>
+                    <button id="historyTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ປະຫວັດ</span>
+                    </button>
+                    <button id="profileTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໂປຣໄຟລ໌</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้ารายละเอียดโรงแรม -->
+    <div id="hotelDetailPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="backToHotelListBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ລາຍລະອຽດໂຮງແຮມ</h1>
+                    </div>
+                    <button id="saveHotelBtn" class="bg-white bg-opacity-20 px-3 py-1 rounded-md text-sm hover:bg-opacity-30 transition duration-200">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span id="saveButtonText">ບັນທຶກ</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4">
+            <!-- รูปภาพโรงแรม -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6 fade-in">
+                <div id="hotelMainImage" class="h-64 md:h-80 bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                    <span class="text-white text-2xl font-bold">🏨 Grand Hotel Vientiane</span>
+                </div>
+                
+                <!-- รูปภาพเล็ก -->
+                <div class="p-4">
+                    <div class="grid grid-cols-4 gap-2">
+                        <div class="h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-md flex items-center justify-center cursor-pointer hover:opacity-80 transition duration-200">
+                            <span class="text-white text-sm">🏊‍♂️</span>
+                        </div>
+                        <div class="h-20 bg-gradient-to-r from-purple-400 to-pink-500 rounded-md flex items-center justify-center cursor-pointer hover:opacity-80 transition duration-200">
+                            <span class="text-white text-sm">🍽️</span>
+                        </div>
+                        <div class="h-20 bg-gradient-to-r from-orange-400 to-red-500 rounded-md flex items-center justify-center cursor-pointer hover:opacity-80 transition duration-200">
+                            <span class="text-white text-sm">🛏️</span>
+                        </div>
+                        <div class="h-20 bg-gradient-to-r from-teal-400 to-blue-500 rounded-md flex items-center justify-center cursor-pointer hover:opacity-80 transition duration-200">
+                            <span class="text-white text-sm">🌅</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ข้อมูลโรงแรม -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- ข้อมูลหลัก -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 id="hotelDetailName" class="text-2xl font-bold text-gray-800 mb-2">Grand Hotel Vientiane</h2>
+                                <p id="hotelDetailLocation" class="text-gray-600 mb-2">📍 ວຽງຈັນ, ລາວ</p>
+                                <p id="hotelDetailAddress" class="text-gray-500 text-sm mb-2">🏠 ຖະໜົນ ສາມເສັນໄທ, ບ້ານ ວັດຈັນ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
+                                <div class="flex items-center mb-4">
+                                    <span class="text-yellow-500 text-lg">⭐⭐⭐⭐⭐</span>
+                                    <span id="hotelDetailRating" class="text-gray-600 ml-2">(4.8) • 245 ຄຳຕິຊົມ</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span id="hotelDetailPrice" class="text-3xl font-bold text-pink-500">₭500,000</span>
+                                <p class="text-gray-600">/ຄືນ</p>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-lg mb-3">ລາຍລະອຽດ</h3>
+                            <p class="text-gray-700 leading-relaxed mb-4">
+                                ໂຮງແຮມຫຼູຫຼາໃນໃຈກາງເມືອງວຽງຈັນ ມີສິ່ງອຳນວຍຄວາມສະດວກຄົບຄັນ ຫ້ອງພັກທີ່ສະອາດສະອ້ານ 
+                                ບໍລິການດີເລີດ ແລະທີ່ຕັ້ງສະດວກໃກ້ກັບສະຖານທີ່ທ່ອງທ່ຽວສຳຄັນຕ່າງໆ
+                            </p>
+                        </div>
+
+                        <div class="border-t pt-4">
+                            <h3 class="font-bold text-lg mb-3">ສິ່ງອຳນວຍຄວາມສະດວກ</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">📶</span>
+                                    <span class="text-sm">WiFi ຟຣີ</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">🏊‍♂️</span>
+                                    <span class="text-sm">ສະລອນ</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">🍽️</span>
+                                    <span class="text-sm">ຮ້ານອາຫານ</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">🚗</span>
+                                    <span class="text-sm">ທີ່ຈອດລົດ</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">❄️</span>
+                                    <span class="text-sm">ແອຣ໌</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-blue-500 mr-2">🛎️</span>
+                                    <span class="text-sm">ບໍລິການ 24 ຊົ່ວໂມງ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ความคิดเห็น -->
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="font-bold text-lg mb-4">ຄຳຕິຊົມຈາກຜູ້ເຂົ້າພັກ</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="border-b pb-4">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                        ສ
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">ສົມຊາຍ ວົງສະຫວັນ</p>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-500 text-sm">⭐⭐⭐⭐⭐</span>
+                                            <span class="text-gray-500 text-sm ml-2">3 ວັນທີ່ຜ່ານມາ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">ໂຮງແຮມດີຫຼາຍ ບໍລິການເປັນເລີດ ຫ້ອງພັກສະອາດ ອາຫານອຮ່ອຍ ແນະນຳໃຫ້ມາພັກ!</p>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                        ນ
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">ນາງ ມາລີ</p>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-500 text-sm">⭐⭐⭐⭐</span>
+                                            <span class="text-gray-500 text-sm ml-2">1 ອາທິດທີ່ຜ່ານມາ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">ທີ່ຕັ້ງດີ ໃກ້ກັບຕະຫຼາດ ພະນັກງານໃຈດີ ຈະກັບມາພັກອີກແນ່ນອນ</p>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                        ບ
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">ບຸນມີ ສີໄຊ</p>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-500 text-sm">⭐⭐⭐⭐⭐</span>
+                                            <span class="text-gray-500 text-sm ml-2">2 ອາທິດທີ່ຜ່ານມາ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">ຄຸ້ມຄ່າກັບເງິນທີ່ຈ່າຍ ສະລອນສວຍ ອາຫານເຊົ້າຫຼາກຫຼາຍ</p>
+                            </div>
+                        </div>
+
+                        <button class="mt-4 text-pink-500 hover:text-pink-600 font-medium">
+                            ອ່ານຄຳຕິຊົມທັງໝົດ →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ฟอร์มจอง -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                        <h3 class="font-bold text-lg mb-4">ຈອງໂຮງແຮມ</h3>
+                        
+                        <form id="bookingForm" class="space-y-4">
+                            <div>
+                                <label for="bookingCheckin" class="block text-sm font-medium text-gray-700 mb-1">ວັນເຊັກອິນ</label>
+                                <input type="date" id="bookingCheckin" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                            </div>
+                            
+                            <div>
+                                <label for="bookingCheckout" class="block text-sm font-medium text-gray-700 mb-1">ວັນເຊັກເອົາ</label>
+                                <input type="date" id="bookingCheckout" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                            </div>
+                            
+                            <div>
+                                <label for="bookingGuests" class="block text-sm font-medium text-gray-700 mb-1">ຈຳນວນຜູ້ເຂົ້າພັກ</label>
+                                <select id="bookingGuests" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="1">1 ຜູ້ໃຫຍ່</option>
+                                    <option value="2">2 ຜູ້ໃຫຍ່</option>
+                                    <option value="3">3 ຜູ້ໃຫຍ່</option>
+                                    <option value="4">4 ຜູ້ໃຫຍ່</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="roomType" class="block text-sm font-medium text-gray-700 mb-1">ປະເພດຫ້ອງ</label>
+                                <select id="roomType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="standard">ຫ້ອງມາດຕະຖານ - ₭500,000</option>
+                                    <option value="deluxe">ຫ້ອງດີລັກ - ₭750,000</option>
+                                    <option value="suite">ຫ້ອງສູດ - ₭1,200,000</option>
+                                </select>
+                            </div>
+
+                            <div class="border-t pt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">ລາຄາຕໍ່ຄືນ:</span>
+                                    <span id="nightlyRate" class="font-medium">₭500,000</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                                    <span id="totalNights" class="font-medium">1</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">ພາສີ & ຄ່າບໍລິການ:</span>
+                                    <span class="font-medium">₭50,000</span>
+                                </div>
+                                <div class="border-t pt-2 flex justify-between items-center">
+                                    <span class="font-bold text-lg">ລວມທັງໝົດ:</span>
+                                    <span id="totalPrice" class="font-bold text-xl text-pink-500">₭550,000</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-pink-500 text-white py-3 px-6 rounded-md hover:bg-pink-600 transition duration-200 font-medium">
+                                ຈອງ
+                            </button>
+                        </form>
+
+                        <div class="mt-4 text-center">
+                            <p class="text-xs text-gray-500">ຍົກເລີກໄດ້ຟຣີ ພາຍໃນ 24 ຊົ່ວໂມງ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- หน้าตรวจสอบการจอง -->
+    <div id="bookingReviewPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="backToHotelDetailFromReviewBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ຕົວຈສອບການຈອງ</h1>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                <div class="text-center mb-6">
+                    <div class="text-blue-500 text-5xl mb-4">📋</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">ກະລຸນາກວດສອບຂໍ້ມູນການຈອງ</h2>
+                    <p class="text-gray-600">ກວດສອບຄວາມຖືກຕ້ອງກ່ອນດຳເນີນການຊຳລະ</p>
+                </div>
+
+                <!-- ข้อมูลการจอง -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- ข้อมูลโรงแรม -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-bold text-lg mb-3 text-pink-500">ຂໍ້ມູນໂຮງແຮມ</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຊື່ໂຮງແຮມ:</span>
+                                <span id="reviewHotelName" class="font-medium">Grand Hotel Vientiane</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ທີ່ຕັ້ງ:</span>
+                                <span id="reviewHotelLocation" class="font-medium">ວຽງຈັນ, ລາວ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ປະເພດຫ້ອງ:</span>
+                                <span id="reviewRoomType" class="font-medium">ຫ້ອງມາດຕະຖານ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຄະແນນ:</span>
+                                <span id="reviewRating" class="font-medium">⭐⭐⭐⭐⭐ (4.8)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลการเข้าพัก -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-bold text-lg mb-3 text-pink-500">ລາຍລະອຽດການເຂົ້າພັກ</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ວັນເຊັກອິນ:</span>
+                                <span id="reviewCheckin" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ວັນເຊັກເອົາ:</span>
+                                <span id="reviewCheckout" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                                <span id="reviewNights" class="font-medium">1 ຄືນ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຈຳນວນຜູ້ເຂົ້າພັກ:</span>
+                                <span id="reviewGuests" class="font-medium">2 ຜູ້ໃຫຍ່</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สรุปราคา -->
+                <div class="border-t pt-4 mb-6">
+                    <h3 class="font-bold text-lg mb-3 text-pink-500">ສະຫຼຸບລາຄາ</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ລາຄາຕໍ່ຄືນ:</span>
+                            <span id="reviewNightlyRate" class="font-medium">₭500,000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                            <span id="reviewTotalNights" class="font-medium">1</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ພາສີ & ຄ່າບໍລິການ:</span>
+                            <span class="font-medium">₭50,000</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between items-center">
+                            <span class="font-bold text-xl">ລວມທັງໝົດ:</span>
+                            <span id="reviewTotalPrice" class="font-bold text-2xl text-pink-500">₭550,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ปุ่มดำเนินการ -->
+                <div class="flex flex-col md:flex-row gap-4 mt-6">
+                    <button id="editBookingBtn" class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-md hover:bg-gray-600 transition duration-200 font-medium">
+                        ✏️ ແກ້ໄຂຂໍ້ມູນ
+                    </button>
+                    <button id="confirmBookingBtn" class="flex-1 bg-pink-500 text-white py-3 px-6 rounded-md hover:bg-pink-600 transition duration-200 font-medium">
+                        ✅ ຢືນຢັນການຈອງ
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- หน้าชำระเงิน -->
+    <div id="paymentPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="backToReviewBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ຊຳລະເງິນ</h1>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- ฟอร์มชำระเงิน -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                        <h3 class="font-bold text-lg mb-4 text-pink-500">ເລືອກວິທີຊຳລະເງິນ</h3>
+                        
+                        <!-- วิธีการชำระเงิน -->
+                        <div class="space-y-4 mb-6">
+                            <div class="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition duration-200 payment-method" data-method="card">
+                                <div class="flex items-center">
+                                    <input type="radio" name="paymentMethod" value="card" class="mr-3" checked>
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">💳</span>
+                                        <div>
+                                            <p class="font-medium">ບັດເຄຣດິດ/ເດບິດ</p>
+                                            <p class="text-sm text-gray-600">Visa, Mastercard, JCB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition duration-200 payment-method" data-method="bank">
+                                <div class="flex items-center">
+                                    <input type="radio" name="paymentMethod" value="bank" class="mr-3">
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">🏦</span>
+                                        <div>
+                                            <p class="font-medium">ໂອນເງິນຜ່ານທະນາຄານ</p>
+                                            <p class="text-sm text-gray-600">BCEL, LDB, APB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition duration-200 payment-method" data-method="mobile">
+                                <div class="flex items-center">
+                                    <input type="radio" name="paymentMethod" value="mobile" class="mr-3">
+                                    <div class="flex items-center">
+                                        <span class="text-2xl mr-3">📱</span>
+                                        <div>
+                                            <p class="font-medium">ຊຳລະຜ່ານມືຖື</p>
+                                            <p class="text-sm text-gray-600">LDB M-Money, BCEL One</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ฟอร์มข้อมูลบัตร -->
+                        <div id="cardForm" class="space-y-4">
+                            <h4 class="font-medium text-gray-800">ຂໍ້ມູນບັດ</h4>
+                            <div>
+                                <label for="cardNumber" class="block text-sm font-medium text-gray-700 mb-1">ເລກບັດ</label>
+                                <input type="text" id="cardNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="expiryDate" class="block text-sm font-medium text-gray-700 mb-1">ວັນໝົດອາຍຸ</label>
+                                    <input type="text" id="expiryDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div>
+                                    <label for="cvv" class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                                    <input type="text" id="cvv" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="cardName" class="block text-sm font-medium text-gray-700 mb-1">ຊື່ເຈົ້າຂອງບັດ</label>
+                                <input type="text" id="cardName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="ຊື່ຕາມທີ່ປາກົດໃນບັດ">
+                            </div>
+                        </div>
+
+                        <!-- ฟอร์มโอนเงิน -->
+                        <div id="bankForm" class="space-y-4 hidden">
+                            <h4 class="font-medium text-gray-800">ຂໍ້ມູນການໂອນເງິນ</h4>
+                            <div>
+                                <label for="bankSelect" class="block text-sm font-medium text-gray-700 mb-1">ເລືອກທະນາຄານ</label>
+                                <select id="bankSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="">ເລືອກທະນາຄານ</option>
+                                    <option value="bcel">BCEL - ທະນາຄານການຄ້າຕ່າງປະເທດລາວ</option>
+                                    <option value="ldb">LDB - ທະນາຄານພັດທະນາລາວ</option>
+                                    <option value="apb">APB - ທະນາຄານກະສິກຳແລະສົ່ງເສີມ</option>
+                                </select>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    <strong>ຂໍ້ມູນການໂອນ:</strong><br>
+                                    ເລກບັນຊີ: 1234567890<br>
+                                    ຊື່ບັນຊີ: HotelBooking Co., Ltd<br>
+                                    ຈຳນວນເງິນ: <span id="transferAmount">₭550,000</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ฟอร์มมือถือ -->
+                        <div id="mobileForm" class="space-y-4 hidden">
+                            <h4 class="font-medium text-gray-800">ຊຳລະຜ່ານມືຖື</h4>
+                            <div>
+                                <label for="mobileSelect" class="block text-sm font-medium text-gray-700 mb-1">ເລືອກແອັບ</label>
+                                <select id="mobileSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option value="">ເລືອກແອັບ</option>
+                                    <option value="mmoney">LDB M-Money</option>
+                                    <option value="bcelone">BCEL One</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">ເບີໂທລະສັບ</label>
+                                <input type="tel" id="phoneNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="020 12345678">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สรุปการชำระ -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                        <h3 class="font-bold text-lg mb-4 text-pink-500">ສະຫຼຸບການຊຳລະ</h3>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ໂຮງແຮມ:</span>
+                                <span id="paymentHotelName" class="font-medium text-sm">Grand Hotel</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ວັນທີ່:</span>
+                                <span id="paymentDates" class="font-medium text-sm">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                                <span id="paymentNights" class="font-medium">1 ຄືນ</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4 mb-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">ລາຄາຫ້ອງ:</span>
+                                <span id="paymentRoomPrice" class="font-medium">₭500,000</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">ພາສີ & ຄ່າບໍລິການ:</span>
+                                <span class="font-medium">₭50,000</span>
+                            </div>
+                            <div class="border-t pt-2 flex justify-between items-center">
+                                <span class="font-bold text-lg">ລວມທັງໝົດ:</span>
+                                <span id="paymentTotal" class="font-bold text-xl text-pink-500">₭550,000</span>
+                            </div>
+                        </div>
+
+                        <button id="processPaymentBtn" class="w-full bg-pink-500 text-white py-3 px-6 rounded-md hover:bg-pink-600 transition duration-200 font-medium">
+                            💳 ດຳເນີນການຊຳລະ
+                        </button>
+
+                        <div class="mt-4 text-center">
+                            <p class="text-xs text-gray-500">🔒 ການຊຳລະປອດໄພດ້ວຍ SSL</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- หน้ายืนยันการจอง -->
+    <div id="bookingConfirmPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="backToHotelDetailBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ຢືນຢັນການຈອງ</h1>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                <div class="text-center mb-6">
+                    <div class="text-green-500 text-5xl mb-4">✅</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">ການຈອງສຳເລັດແລ້ວ!</h2>
+                    <p class="text-gray-600">ຂໍ້ມູນການຈອງຂອງທ່ານ</p>
+                </div>
+
+                <!-- ข้อมูลการจอง -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- ข้อมูลโรงแรม -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-bold text-lg mb-3 text-pink-500">ຂໍ້ມູນໂຮງແຮມ</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຊື່ໂຮງແຮມ:</span>
+                                <span id="confirmHotelName" class="font-medium">Grand Hotel Vientiane</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ທີ່ຕັ້ງ:</span>
+                                <span id="confirmHotelLocation" class="font-medium">ວຽງຈັນ, ລາວ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ປະເພດຫ້ອງ:</span>
+                                <span id="confirmRoomType" class="font-medium">ຫ້ອງມາດຕະຖານ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຄະແນນ:</span>
+                                <span id="confirmRating" class="font-medium">⭐⭐⭐⭐⭐ (4.8)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลการเข้าพัก -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-bold text-lg mb-3 text-pink-500">ລາຍລະອຽດການເຂົ້າພັກ</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ວັນເຊັກອິນ:</span>
+                                <span id="confirmCheckin" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ວັນເຊັກເອົາ:</span>
+                                <span id="confirmCheckout" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                                <span id="confirmNights" class="font-medium">1 ຄືນ</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">ຈຳນວນຜູ້ເຂົ້າພັກ:</span>
+                                <span id="confirmGuests" class="font-medium">2 ຜູ້ໃຫຍ່</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สรุปราคา -->
+                <div class="border-t pt-4 mb-6">
+                    <h3 class="font-bold text-lg mb-3 text-pink-500">ສະຫຼຸບລາຄາ</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ລາຄາຕໍ່ຄືນ:</span>
+                            <span id="confirmNightlyRate" class="font-medium">₭500,000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ຈຳນວນຄືນ:</span>
+                            <span id="confirmTotalNights" class="font-medium">1</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">ພາສີ & ຄ່າບໍລິການ:</span>
+                            <span class="font-medium">₭50,000</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between items-center">
+                            <span class="font-bold text-xl">ລວມທັງໝົດ:</span>
+                            <span id="confirmTotalPrice" class="font-bold text-2xl text-pink-500">₭550,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- รหัสการจอง -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div class="text-center">
+                        <h3 class="font-bold text-lg mb-2">ລະຫັດການຈອງ</h3>
+                        <div class="text-2xl font-mono font-bold text-pink-500 mb-2" id="bookingCode">HB2024001</div>
+                        <p class="text-sm text-gray-600">ກະລຸນາເກັບຮັກສາລະຫັດນີ້ໄວ້ສຳລັບການເຊັກອິນ</p>
+                    </div>
+                </div>
+
+                <!-- ข้อมูลติดต่อ -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-lg mb-3 text-pink-500">ຂໍ້ມູນການຕິດຕໍ່</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">ໂທລະສັບໂຮງແຮມ:</p>
+                            <p class="font-medium">+856 21 123456</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">ອີເມວ:</p>
+                            <p class="font-medium">info@grandhotel.la</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ปุ่มดำเนินการ -->
+                <div class="flex flex-col md:flex-row gap-4 mt-6">
+                    <button id="downloadReceiptBtn" class="flex-1 bg-blue-500 text-white py-3 px-6 rounded-md hover:bg-blue-600 transition duration-200 font-medium">
+                        📄 ດາວໂຫຼດໃບຮັບ
+                    </button>
+                    <button id="shareBookingBtn" class="flex-1 bg-green-500 text-white py-3 px-6 rounded-md hover:bg-green-600 transition duration-200 font-medium">
+                        📤 ແບ່ງປັນການຈອງ
+                    </button>
+                    <button id="backToHomeBtn" class="flex-1 bg-pink-500 text-white py-3 px-6 rounded-md hover:bg-pink-600 transition duration-200 font-medium">
+                        🏠 ກັບໜ້າຫຼັກ
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- หน้ารายการโปรด -->
+    <div id="favoritePage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <button id="backToHotelFromFavoriteBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ລາຍການທີ່ຮັກ</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">ສະບາຍດີ, ຜູ້ໃຊ້</span>
+                        <button id="favoriteLogoutBtn" class="bg-white bg-opacity-20 px-3 py-1 rounded-md text-sm hover:bg-opacity-30 transition duration-200">
+                            ອອກຈາກລະບົບ
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-2">ໂຮງແຮມທີ່ທ່ານຮັກ</h2>
+                    <p class="text-lg opacity-90">ເກັບຮັກສາໂຮງແຮມທີ່ທ່ານມັກໄວ້ທີ່ນີ້</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4">
+            <!-- ตัวกรอง -->
+            <div class="bg-white rounded-lg shadow-lg p-4 mb-6 fade-in">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div>
+                        <label for="favoriteLocationFilter" class="block text-sm font-medium text-gray-700 mb-1">ທີ່ຕັ້ງ</label>
+                        <select id="favoriteLocationFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="all">ທັງໝົດ</option>
+                            <option value="ວຽງຈັນ">ວຽງຈັນ</option>
+                            <option value="ຫຼວງພະບາງ">ຫຼວງພະບາງ</option>
+                            <option value="ວັງວຽງ">ວັງວຽງ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="favoritePriceFilter" class="block text-sm font-medium text-gray-700 mb-1">ລາຄາ</label>
+                        <select id="favoritePriceFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="all">ທັງໝົດ</option>
+                            <option value="low">ຕ່ຳກວ່າ ₭500,000</option>
+                            <option value="medium">₭500,000 - ₭800,000</option>
+                            <option value="high">ສູງກວ່າ ₭800,000</option>
+                        </select>
+                    </div>
+                    <button id="filterFavoritesBtn" class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 mt-6">
+                        🔍 ກັ່ນຕອງ
+                    </button>
+                </div>
+            </div>
+
+            <!-- รายการโปรด -->
+            <div id="favoritesList" class="space-y-4">
+                <!-- รายการโปรดจะแสดงที่นี่ -->
+            </div>
+
+            <!-- ข้อความเมื่อไม่มีข้อมูล -->
+            <div id="noFavoritesMessage" class="hidden text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">💔</div>
+                <h3 class="text-xl font-bold text-gray-600 mb-2">ຍັງບໍ່ມີໂຮງແຮມທີ່ຮັກ</h3>
+                <p class="text-gray-500 mb-4">ເມື່ອທ່ານກົດໃຈໃນໂຮງແຮມ ມັນຈະປາກົດທີ່ນີ້</p>
+                <button id="browseFavoritesBtn" class="bg-pink-500 text-white px-6 py-3 rounded-md hover:bg-pink-600 transition duration-200">
+                    ໄປຄົ້ນຫາໂຮງແຮມ
+                </button>
+            </div>
+        </main>
+
+        <!-- แท็บด้านล่าง Favorites -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-around">
+                    <button id="favoriteHomeTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໜ້າຫຼັກ</span>
+                    </button>
+
+                    <button id="favoriteActiveTab" class="flex flex-col items-center py-2 px-4 text-pink-500">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ຮັກ</span>
+                    </button>
+                    <button id="favoriteHistoryTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ປະຫວັດ</span>
+                    </button>
+                    <button id="favoriteProfileTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໂປຣໄຟລ໌</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าโปรไฟล์ -->
+    <div id="profilePage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <button id="backToHotelFromProfileBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ໂປຣໄຟລ໌</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">ສະບາຍດີ, <span id="profileUserName">ຜູ້ໃຊ້</span></span>
+                        <button id="profileLogoutBtn" class="bg-white bg-opacity-20 px-3 py-1 rounded-md text-sm hover:bg-opacity-30 transition duration-200">
+                            ອອກຈາກລະບົບ
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">ຂໍ້ມູນສ່ວນຕົວ</h2>
+                    <p class="text-lg opacity-90" id="profileUserEmail">user@example.com</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-4">
+            <!-- สถิติการใช้งาน -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                    <div class="text-3xl text-blue-500 mb-2">📊</div>
+                    <h3 class="font-bold text-lg mb-1">ການຈອງທັງໝົດ</h3>
+                    <p class="text-2xl font-bold text-blue-500" id="totalBookings">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                    <div class="text-3xl text-pink-500 mb-2">❤️</div>
+                    <h3 class="font-bold text-lg mb-1">ໂຮງແຮມທີ່ຮັກ</h3>
+                    <p class="text-2xl font-bold text-pink-500" id="totalFavorites">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                    <div class="text-3xl text-green-500 mb-2">💰</div>
+                    <h3 class="font-bold text-lg mb-1">ຈຳນວນເງິນທີ່ຈ່າຍ</h3>
+                    <p class="text-2xl font-bold text-green-500" id="totalSpent">₭0</p>
+                </div>
+            </div>
+
+            <!-- ข้อมูลส่วนตัว -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">ຂໍ້ມູນສ່ວນຕົວ</h3>
+                    <button id="editProfileBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">
+                        ✏️ ແກ້ໄຂ
+                    </button>
+                </div>
+
+                <!-- แสดงข้อมูล -->
+                <div id="profileView" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ຊື່-ນາມສະກຸນ</p>
+                        <p class="font-medium text-lg" id="displayName">ຜູ້ໃຊ້ລະບົບ</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ອີເມວ</p>
+                        <p class="font-medium text-lg" id="displayEmail">user@example.com</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ເບີໂທລະສັບ</p>
+                        <p class="font-medium text-lg" id="displayPhone">020 12345678</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ວັນເກີດ</p>
+                        <p class="font-medium text-lg" id="displayBirthdate">01/01/1990</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ເພດ</p>
+                        <p class="font-medium text-lg" id="displayGender">ຊາຍ</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ທີ່ຢູ່</p>
+                        <p class="font-medium text-lg" id="displayAddress">ວຽງຈັນ, ລາວ</p>
+                    </div>
+                </div>
+
+                <!-- ฟอร์มแก้ไข -->
+                <form id="profileEditForm" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="editName" class="block text-sm font-medium text-gray-700 mb-1">ຊື່-ນາມສະກຸນ</label>
+                        <input type="text" id="editName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="editEmail" class="block text-sm font-medium text-gray-700 mb-1">ອີເມວ</label>
+                        <input type="email" id="editEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="editPhone" class="block text-sm font-medium text-gray-700 mb-1">ເບີໂທລະສັບ</label>
+                        <input type="tel" id="editPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="editBirthdate" class="block text-sm font-medium text-gray-700 mb-1">ວັນເກີດ</label>
+                        <input type="date" id="editBirthdate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div>
+                        <label for="editGender" class="block text-sm font-medium text-gray-700 mb-1">ເພດ</label>
+                        <select id="editGender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                            <option value="male">ຊາຍ</option>
+                            <option value="female">ຍິງ</option>
+                            <option value="other">ອື່ນໆ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="editAddress" class="block text-sm font-medium text-gray-700 mb-1">ທີ່ຢູ່</label>
+                        <input type="text" id="editAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                    </div>
+                    <div class="md:col-span-2 flex space-x-4">
+                        <button type="submit" class="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-200">
+                            💾 ບັນທຶກ
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+                            ຍົກເລີກ
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- การตั้งค่า -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">ການຕັ້ງຄ່າ</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <div>
+                            <p class="font-medium">ການແຈ້ງເຕືອນ</p>
+                            <p class="text-sm text-gray-600">ຮັບການແຈ້ງເຕືອນກ່ຽວກັບການຈອງ</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <div>
+                            <p class="font-medium">ພາສາ</p>
+                            <p class="text-sm text-gray-600">ເລືອກພາສາທີ່ຕ້ອງການ</p>
+                        </div>
+                        <select class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="lo">ລາວ</option>
+                            <option value="en">English</option>
+                            <option value="th">ไทย</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-between items-center py-3">
+                        <div>
+                            <p class="font-medium">ສະມາຊິກຕັ້ງແຕ່</p>
+                            <p class="text-sm text-gray-600">ວັນທີ່ເຂົ້າຮ່ວມ</p>
+                        </div>
+                        <span class="font-medium text-pink-500" id="memberSince">2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ปุ่มการจัดการบัญชี -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">ການຈັດການບັນຊີ</h3>
+                <div class="space-y-4">
+                    <button id="changePasswordBtn" class="w-full bg-blue-500 text-white py-3 px-6 rounded-md hover:bg-blue-600 transition duration-200 text-left">
+                        🔒 ປ່ຽນລະຫັດຜ່ານ
+                    </button>
+                    <button id="deleteAccountBtn" class="w-full bg-red-500 text-white py-3 px-6 rounded-md hover:bg-red-600 transition duration-200 text-left">
+                        🗑️ ລຶບບັນຊີ
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- แท็บด้านล่าง Profile -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-around">
+                    <button id="profileHomeTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໜ້າຫຼັກ</span>
+                    </button>
+
+                    <button id="profileFavoriteTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ຮັກ</span>
+                    </button>
+                    <button id="profileHistoryTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ປະຫວັດ</span>
+                    </button>
+                    <button id="profileActiveTab" class="flex flex-col items-center py-2 px-4 text-pink-500">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໂປຣໄຟລ໌</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าประวัติการจอง -->
+    <div id="historyPage" class="hidden min-h-full pb-20">
+        <header class="hotel-gradient text-white p-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <button id="backToHotelFromHistoryBtn" class="mr-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h1 class="text-xl font-bold">ປະຫວັດການຈອງ</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">ສະບາຍດີ, ຜູ້ໃຊ້</span>
+                        <button id="historyLogoutBtn" class="bg-white bg-opacity-20 px-3 py-1 rounded-md text-sm hover:bg-opacity-30 transition duration-200">
+                            ອອກຈາກລະບົບ
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-2">ການຈອງທັງໝົດຂອງທ່ານ</h2>
+                    <p class="text-lg opacity-90">ເບິ່ງປະຫວັດແລະລາຍລະອຽດການຈອງ</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4">
+            <!-- ตัวกรอง -->
+            <div class="bg-white rounded-lg shadow-lg p-4 mb-6 fade-in">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div>
+                        <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-1">ສະຖານະ</label>
+                        <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="all">ທັງໝົດ</option>
+                            <option value="confirmed">ຢືນຢັນແລ້ວ</option>
+                            <option value="completed">ສຳເລັດແລ້ວ</option>
+                            <option value="cancelled">ຍົກເລີກແລ້ວ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">ໄລຍະເວລາ</label>
+                        <select id="dateFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="all">ທັງໝົດ</option>
+                            <option value="month">ເດືອນນີ້</option>
+                            <option value="3months">3 ເດືອນທີ່ຜ່ານມາ</option>
+                            <option value="year">ປີນີ້</option>
+                        </select>
+                    </div>
+                    <button id="searchHistoryBtn" class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 mt-6">
+                        🔍 ຄົ້ນຫາ
+                    </button>
+                </div>
+            </div>
+
+            <!-- รายการประวัติการจอง -->
+            <div id="bookingHistoryList" class="space-y-4">
+                <!-- การจองจะแสดงที่นี่ -->
+            </div>
+
+            <!-- ข้อความเมื่อไม่มีข้อมูล -->
+            <div id="noHistoryMessage" class="hidden text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📋</div>
+                <h3 class="text-xl font-bold text-gray-600 mb-2">ຍັງບໍ່ມີປະຫວັດການຈອງ</h3>
+                <p class="text-gray-500 mb-4">ເມື່ອທ່ານຈອງໂຮງແຮມ ປະຫວັດຈະປາກົດທີ່ນີ້</p>
+                <button id="startBookingBtn" class="bg-pink-500 text-white px-6 py-3 rounded-md hover:bg-pink-600 transition duration-200">
+                    ເລີ່ມຈອງໂຮງແຮມ
+                </button>
+            </div>
+        </main>
+
+        <!-- แท็บด้านล่าง History -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-around">
+                    <button id="historyHomeTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໜ້າຫຼັກ</span>
+                    </button>
+
+                    <button id="historyFavoriteTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ຮັກ</span>
+                    </button>
+                    <button id="historyActiveTab" class="flex flex-col items-center py-2 px-4 text-pink-500">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ປະຫວັດ</span>
+                    </button>
+                    <button id="historyProfileTab" class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-pink-500 transition duration-200">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="text-xs font-medium">ໂປຣໄຟລ໌</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // ตั้งค่าวันที่เริ่มต้น
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        document.getElementById('checkin').value = today.toISOString().split('T')[0];
+        document.getElementById('checkout').value = tomorrow.toISOString().split('T')[0];
+
+        // จำลองการโหลด
+        setTimeout(() => {
+            document.getElementById('loadingPage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        }, 3000);
+
+        // การนำทางระหว่างหน้า
+        document.getElementById('backToLoadingBtn').addEventListener('click', () => {
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('loadingPage').classList.remove('hidden');
+        });
+
+        document.getElementById('backToAuthBtn').addEventListener('click', () => {
+            document.getElementById('hotelPage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            document.getElementById('hotelPage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        });
+
+        // กลับจากหน้ารายละเอียดโรงแรม
+        document.getElementById('backToHotelListBtn').addEventListener('click', () => {
+            document.getElementById('hotelDetailPage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        // สลับแท็บล็อกอิน/สร้างบัญชี
+        document.getElementById('loginTab').addEventListener('click', () => {
+            document.getElementById('loginTab').classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            document.getElementById('loginTab').classList.remove('text-gray-600');
+            document.getElementById('signupTab').classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            document.getElementById('signupTab').classList.add('text-gray-600');
+            
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+        });
+
+        document.getElementById('signupTab').addEventListener('click', () => {
+            document.getElementById('signupTab').classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            document.getElementById('signupTab').classList.remove('text-gray-600');
+            document.getElementById('loginTab').classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            document.getElementById('loginTab').classList.add('text-gray-600');
+            
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+        });
+
+        // จัดการฟอร์มล็อกอิน
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (email && password) {
+                document.getElementById('authPage').classList.add('hidden');
+                document.getElementById('hotelPage').classList.remove('hidden');
+            }
+        });
+
+        // จัดการฟอร์มสร้างบัญชี
+        document.getElementById('signupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                // แสดงข้อความแจ้งเตือนแบบ inline แทน alert
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+                errorDiv.textContent = 'ລະຫັດຜ່ານບໍ່ຕົງກັນ';
+                document.getElementById('signupForm').insertBefore(errorDiv, document.getElementById('signupForm').firstChild);
+                setTimeout(() => errorDiv.remove(), 3000);
+                return;
+            }
+            
+            if (name && email && password) {
+                document.getElementById('authPage').classList.add('hidden');
+                document.getElementById('hotelPage').classList.remove('hidden');
+            }
+        });
+
+        // จัดการฟอร์มค้นหา
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const destination = document.getElementById('destination').value;
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+            
+            if (destination && checkin && checkout) {
+                // แสดงผลการค้นหา
+                const searchResultsGrid = document.querySelector('#searchResults .grid');
+                searchResultsGrid.innerHTML = `
+                    <!-- โรงแรมผลการค้นหา 1 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏨 Luxury Hotel</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Settha Palace Hotel</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ${destination}</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.9)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭750,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Settha Palace Hotel" data-location="${destination}" data-price="₭750,000" data-rating="4.9">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- โรงแรมผลการค้นหา 2 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-teal-400 to-blue-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏖️ Boutique Hotel</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Ansara Hotel</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ${destination}</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.7)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭580,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Ansara Hotel" data-location="${destination}" data-price="₭580,000" data-rating="4.7">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- โรงแรมผลการค้นหา 3 -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-200 slide-in">
+                        <div class="h-48 bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">🏨 Business Hotel</span>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">Crowne Plaza</h4>
+                            <p class="text-gray-600 text-sm mb-2">📍 ${destination}</p>
+                            <div class="flex items-center mb-2">
+                                <span class="text-yellow-500">⭐⭐⭐⭐</span>
+                                <span class="text-sm text-gray-600 ml-2">(4.6)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl font-bold text-pink-500">₭620,000</span>
+                                    <span class="text-sm text-gray-600">/ຄືນ</span>
+                                </div>
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 hotel-detail-btn" data-name="Crowne Plaza" data-location="${destination}" data-price="₭620,000" data-rating="4.6">
+                                    ດູລາຍລະອຽດ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // เพิ่ม event listener สำหรับปุ่มดูรายละเอียดในผลการค้นหา
+                addHotelDetailListeners();
+                
+                document.getElementById('searchResults').classList.remove('hidden');
+                document.getElementById('searchResults').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // ฟังก์ชันเพิ่ม event listener สำหรับปุ่มดูรายละเอียดโรงแรม
+        function addHotelDetailListeners() {
+            document.querySelectorAll('.hotel-detail-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const name = btn.getAttribute('data-name');
+                    const location = btn.getAttribute('data-location');
+                    const price = btn.getAttribute('data-price');
+                    const rating = btn.getAttribute('data-rating');
+                    
+                    // อัพเดทข้อมูลในหน้ารายละเอียด
+                    document.getElementById('hotelDetailName').textContent = name;
+                    document.getElementById('hotelDetailLocation').textContent = `📍 ${location}`;
+                    
+                    // อัพเดทที่อยู่ตามโรงแรม
+                    const addresses = {
+                        'Grand Hotel Vientiane': 'ຖະໜົນ ສາມເສັນໄທ, ບ້ານ ວັດຈັນ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ',
+                        'Mekong River Resort': 'ຖະໜົນ ຊີສະວາງວົງ, ບ້ານ ວັດໂຊ, ເມືອງ ຫຼວງພະບາງ, ແຂວງ ຫຼວງພະບາງ',
+                        'Phou Bia Mountain Hotel': 'ຖະໜົນ ທ່ອງທ່ຽວ, ບ້ານ ວັງວຽງ, ເມືອງ ວັງວຽງ, ແຂວງ ວຽງຈັນ',
+                        'Settha Palace Hotel': 'ຖະໜົນ ປັງຄຳ, ບ້ານ ວັດອິນແປງ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ',
+                        'Ansara Hotel': 'ຖະໜົນ ຟ້າງຸ່ມ, ບ້ານ ວັດໂຊ, ເມືອງ ຫຼວງພະບາງ, ແຂວງ ຫຼວງພະບາງ',
+                        'Crowne Plaza': 'ຖະໜົນ ລານຊ້າງ, ບ້ານ ຫາດສະໜາມ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ'
+                    };
+                    
+                    document.getElementById('hotelDetailAddress').textContent = `🏠 ${addresses[name] || 'ທີ່ຢູ່ລາຍລະອຽດຂອງໂຮງແຮມ'}`;
+                    document.getElementById('hotelDetailPrice').textContent = price;
+                    document.getElementById('hotelDetailRating').textContent = `(${rating}) • 245 ຄຳຕິຊົມ`;
+                    document.getElementById('hotelMainImage').innerHTML = `<span class="text-white text-2xl font-bold">🏨 ${name}</span>`;
+                    
+                    // อัพเดทฟอร์มจอง
+                    document.getElementById('bookingCheckin').value = today.toISOString().split('T')[0];
+                    document.getElementById('bookingCheckout').value = tomorrow.toISOString().split('T')[0];
+                    
+                    // แสดงหน้ารายละเอียด
+                    document.getElementById('hotelPage').classList.add('hidden');
+                    document.getElementById('hotelDetailPage').classList.remove('hidden');
+                    
+                    // อัพเดทสถานะปุ่มบันทึก
+                    setTimeout(() => updateSaveButtonState(), 100);
+                });
+            });
+        }
+
+        // เพิ่ม event listener สำหรับโรงแรมแนะนำ
+        addHotelDetailListeners();
+
+
+
+        // จัดการฟอร์มจอง
+        document.getElementById('bookingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // รวบรวมข้อมูลการจอง
+            const hotelName = document.getElementById('hotelDetailName').textContent;
+            const hotelLocation = document.getElementById('hotelDetailLocation').textContent.replace('📍 ', '');
+            const checkin = document.getElementById('bookingCheckin').value;
+            const checkout = document.getElementById('bookingCheckout').value;
+            const guests = document.getElementById('bookingGuests').value;
+            const roomType = document.getElementById('roomType');
+            const roomTypeText = roomType.options[roomType.selectedIndex].text;
+            const totalPrice = document.getElementById('totalPrice').textContent;
+            const nightlyRate = document.getElementById('nightlyRate').textContent;
+            const totalNights = document.getElementById('totalNights').textContent;
+            const rating = document.getElementById('hotelDetailRating').textContent;
+            
+            // คำนวณจำนวนคืน
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24));
+            
+            // อัพเดทข้อมูลในหน้าตรวจสอบ
+            document.getElementById('reviewHotelName').textContent = hotelName;
+            document.getElementById('reviewHotelLocation').textContent = hotelLocation;
+            document.getElementById('reviewRoomType').textContent = roomTypeText.split(' - ')[0];
+            document.getElementById('reviewRating').textContent = rating;
+            document.getElementById('reviewCheckin').textContent = new Date(checkin).toLocaleDateString('lo-LA');
+            document.getElementById('reviewCheckout').textContent = new Date(checkout).toLocaleDateString('lo-LA');
+            document.getElementById('reviewNights').textContent = nights + ' ຄືນ';
+            document.getElementById('reviewGuests').textContent = guests + ' ຜູ້ໃຫຍ່';
+            document.getElementById('reviewNightlyRate').textContent = nightlyRate;
+            document.getElementById('reviewTotalNights').textContent = nights;
+            document.getElementById('reviewTotalPrice').textContent = totalPrice;
+            
+            // เก็บข้อมูลไว้ใช้ในขั้นตอนต่อไป
+            window.currentBooking = {
+                hotelName: hotelName,
+                hotelLocation: hotelLocation,
+                checkin: checkin,
+                checkout: checkout,
+                guests: guests,
+                roomType: roomTypeText.split(' - ')[0],
+                totalPrice: totalPrice,
+                nightlyRate: nightlyRate,
+                nights: nights,
+                rating: rating
+            };
+            
+            // แสดงหน้าตรวจสอบการจอง
+            document.getElementById('hotelDetailPage').classList.add('hidden');
+            document.getElementById('bookingReviewPage').classList.remove('hidden');
+        });
+
+        // จัดการการคำนวณราคา
+        document.getElementById('roomType').addEventListener('change', (e) => {
+            const prices = {
+                'standard': '₭500,000',
+                'deluxe': '₭750,000',
+                'suite': '₭1,200,000'
+            };
+            
+            const selectedPrice = prices[e.target.value];
+            document.getElementById('nightlyRate').textContent = selectedPrice;
+            
+            // คำนวณราคารวม (สมมติ 1 คืน + ภาษี)
+            const priceNumber = parseInt(selectedPrice.replace(/[₭,]/g, ''));
+            const total = priceNumber + 50000;
+            document.getElementById('totalPrice').textContent = `₭${total.toLocaleString()}`;
+        });
+
+
+
+        // จัดการหน้าตรวจสอบการจอง
+        document.getElementById('backToHotelDetailFromReviewBtn').addEventListener('click', () => {
+            document.getElementById('bookingReviewPage').classList.add('hidden');
+            document.getElementById('hotelDetailPage').classList.remove('hidden');
+        });
+
+        document.getElementById('editBookingBtn').addEventListener('click', () => {
+            document.getElementById('bookingReviewPage').classList.add('hidden');
+            document.getElementById('hotelDetailPage').classList.remove('hidden');
+        });
+
+        document.getElementById('confirmBookingBtn').addEventListener('click', () => {
+            // อัพเดทข้อมูลในหน้าชำระเงิน
+            const booking = window.currentBooking;
+            document.getElementById('paymentHotelName').textContent = booking.hotelName;
+            document.getElementById('paymentDates').textContent = `${new Date(booking.checkin).toLocaleDateString('lo-LA')} - ${new Date(booking.checkout).toLocaleDateString('lo-LA')}`;
+            document.getElementById('paymentNights').textContent = booking.nights + ' ຄືນ';
+            document.getElementById('paymentRoomPrice').textContent = booking.nightlyRate;
+            document.getElementById('paymentTotal').textContent = booking.totalPrice;
+            document.getElementById('transferAmount').textContent = booking.totalPrice;
+            
+            document.getElementById('bookingReviewPage').classList.add('hidden');
+            document.getElementById('paymentPage').classList.remove('hidden');
+        });
+
+        // จัดการหน้าชำระเงิน
+        document.getElementById('backToReviewBtn').addEventListener('click', () => {
+            document.getElementById('paymentPage').classList.add('hidden');
+            document.getElementById('bookingReviewPage').classList.remove('hidden');
+        });
+
+        // จัดการการเลือกวิธีชำระเงิน
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', () => {
+                const methodType = method.getAttribute('data-method');
+                const radio = method.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // ซ่อนฟอร์มทั้งหมด
+                document.getElementById('cardForm').classList.add('hidden');
+                document.getElementById('bankForm').classList.add('hidden');
+                document.getElementById('mobileForm').classList.add('hidden');
+                
+                // แสดงฟอร์มที่เลือก
+                if (methodType === 'card') {
+                    document.getElementById('cardForm').classList.remove('hidden');
+                } else if (methodType === 'bank') {
+                    document.getElementById('bankForm').classList.remove('hidden');
+                } else if (methodType === 'mobile') {
+                    document.getElementById('mobileForm').classList.remove('hidden');
+                }
+            });
+        });
+
+        // จัดการการจัดรูปแบบเลขบัตร
+        document.getElementById('cardNumber').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        document.getElementById('expiryDate').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        document.getElementById('cvv').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // จัดการการประมวลผลการชำระเงิน
+        document.getElementById('processPaymentBtn').addEventListener('click', () => {
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            let isValid = false;
+            
+            // ตรวจสอบข้อมูลตามวิธีชำระเงิน
+            if (selectedMethod === 'card') {
+                const cardNumber = document.getElementById('cardNumber').value;
+                const expiryDate = document.getElementById('expiryDate').value;
+                const cvv = document.getElementById('cvv').value;
+                const cardName = document.getElementById('cardName').value;
+                
+                if (cardNumber && expiryDate && cvv && cardName) {
+                    isValid = true;
+                }
+            } else if (selectedMethod === 'bank') {
+                const bankSelect = document.getElementById('bankSelect').value;
+                if (bankSelect) {
+                    isValid = true;
+                }
+            } else if (selectedMethod === 'mobile') {
+                const mobileSelect = document.getElementById('mobileSelect').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                if (mobileSelect && phoneNumber) {
+                    isValid = true;
+                }
+            }
+            
+            if (!isValid) {
+                // แสดงข้อความแจ้งเตือน
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                errorDiv.textContent = 'ກະລຸນາໃສ່ຂໍ້ມູນໃຫ້ຄົບຖ້ວນ';
+                document.body.appendChild(errorDiv);
+                setTimeout(() => errorDiv.remove(), 3000);
+                return;
+            }
+            
+            // แสดงการประมวลผล
+            const processDiv = document.createElement('div');
+            processDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            processDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+                    <p class="text-lg font-medium">ກຳລັງດຳເນີນການຊຳລະ...</p>
+                </div>
+            `;
+            document.body.appendChild(processDiv);
+            
+            // จำลองการประมวลผล
+            setTimeout(() => {
+                processDiv.remove();
+                
+                // สร้างรหัสการจอง
+                const bookingCode = 'HB' + new Date().getFullYear() + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                
+                // อัพเดทข้อมูลในหน้ายืนยัน
+                const booking = window.currentBooking;
+                document.getElementById('confirmHotelName').textContent = booking.hotelName;
+                document.getElementById('confirmHotelLocation').textContent = booking.hotelLocation;
+                document.getElementById('confirmRoomType').textContent = booking.roomType;
+                document.getElementById('confirmRating').textContent = booking.rating;
+                document.getElementById('confirmCheckin').textContent = new Date(booking.checkin).toLocaleDateString('lo-LA');
+                document.getElementById('confirmCheckout').textContent = new Date(booking.checkout).toLocaleDateString('lo-LA');
+                document.getElementById('confirmNights').textContent = booking.nights + ' ຄືນ';
+                document.getElementById('confirmGuests').textContent = booking.guests + ' ຜູ້ໃຫຍ່';
+                document.getElementById('confirmNightlyRate').textContent = booking.nightlyRate;
+                document.getElementById('confirmTotalNights').textContent = booking.nights;
+                document.getElementById('confirmTotalPrice').textContent = booking.totalPrice;
+                document.getElementById('bookingCode').textContent = bookingCode;
+                
+                // บันทึกการจองลงใน localStorage
+                const bookingRecord = {
+                    id: bookingCode,
+                    hotelName: booking.hotelName,
+                    location: booking.hotelLocation,
+                    roomType: booking.roomType,
+                    checkin: booking.checkin,
+                    checkout: booking.checkout,
+                    nights: booking.nights,
+                    guests: booking.guests,
+                    totalPrice: booking.totalPrice,
+                    nightlyRate: booking.nightlyRate,
+                    status: 'confirmed',
+                    bookingDate: new Date().toISOString(),
+                    rating: booking.rating
+                };
+                
+                // เพิ่มการจองใหม่ลงในประวัติ
+                let bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+                bookingHistory.unshift(bookingRecord);
+                localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+                
+                // แสดงหน้ายืนยันการจอง
+                document.getElementById('paymentPage').classList.add('hidden');
+                document.getElementById('bookingConfirmPage').classList.remove('hidden');
+            }, 2000);
+        });
+
+        // จัดการหน้ายืนยันการจอง
+        document.getElementById('backToHotelDetailBtn').addEventListener('click', () => {
+            document.getElementById('bookingConfirmPage').classList.add('hidden');
+            document.getElementById('hotelDetailPage').classList.remove('hidden');
+        });
+
+        document.getElementById('backToHomeBtn').addEventListener('click', () => {
+            document.getElementById('bookingConfirmPage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        // จัดการปุ่มดาวน์โหลดใบเสร็จ
+        document.getElementById('downloadReceiptBtn').addEventListener('click', () => {
+            // สร้างข้อความแจ้งเตือน
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notifyDiv.textContent = '📄 ກຳລັງດາວໂຫຼດໃບຮັບ...';
+            document.body.appendChild(notifyDiv);
+            
+            setTimeout(() => {
+                notifyDiv.textContent = '✅ ດາວໂຫຼດສຳເລັດ!';
+                setTimeout(() => notifyDiv.remove(), 2000);
+            }, 1500);
+        });
+
+        // จัดการปุ่มแบ่งปันการจอง
+        document.getElementById('shareBookingBtn').addEventListener('click', () => {
+            const bookingCode = document.getElementById('bookingCode').textContent;
+            const hotelName = document.getElementById('confirmHotelName').textContent;
+            
+            // สร้างข้อความแจ้งเตือน
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notifyDiv.textContent = `📤 ແບ່ງປັນການຈອງ ${bookingCode} ສຳເລັດ!`;
+            document.body.appendChild(notifyDiv);
+            
+            setTimeout(() => notifyDiv.remove(), 3000);
+        });
+
+        // จัดการแท็บประวัติ
+        document.getElementById('historyTab').addEventListener('click', () => {
+            document.getElementById('hotelPage').classList.add('hidden');
+            document.getElementById('historyPage').classList.remove('hidden');
+            loadBookingHistory();
+        });
+
+        // จัดการแท็บในหน้าประวัติ
+        document.getElementById('historyHomeTab').addEventListener('click', () => {
+            document.getElementById('historyPage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+
+
+        document.getElementById('backToHotelFromHistoryBtn').addEventListener('click', () => {
+            document.getElementById('historyPage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        document.getElementById('historyLogoutBtn').addEventListener('click', () => {
+            document.getElementById('historyPage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        });
+
+        document.getElementById('startBookingBtn').addEventListener('click', () => {
+            document.getElementById('historyPage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        // ฟังก์ชันโหลดประวัติการจอง
+        function loadBookingHistory() {
+            const bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+            const historyList = document.getElementById('bookingHistoryList');
+            const noHistoryMessage = document.getElementById('noHistoryMessage');
+            
+            if (bookingHistory.length === 0) {
+                historyList.innerHTML = '';
+                noHistoryMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noHistoryMessage.classList.add('hidden');
+            historyList.innerHTML = '';
+            
+            bookingHistory.forEach(booking => {
+                const statusColor = {
+                    'confirmed': 'bg-green-100 text-green-800',
+                    'completed': 'bg-blue-100 text-blue-800',
+                    'cancelled': 'bg-red-100 text-red-800'
+                };
+                
+                const statusText = {
+                    'confirmed': 'ຢືນຢັນແລ້ວ',
+                    'completed': 'ສຳເລັດແລ້ວ',
+                    'cancelled': 'ຍົກເລີກແລ້ວ'
+                };
+                
+                const bookingCard = `
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800">${booking.hotelName}</h3>
+                                <p class="text-gray-600">📍 ${booking.location}</p>
+                                <p class="text-sm text-gray-500">ລະຫັດ: ${booking.id}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-sm font-medium ${statusColor[booking.status]}">
+                                ${statusText[booking.status]}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600">ວັນເຊັກອິນ</p>
+                                <p class="font-medium">${new Date(booking.checkin).toLocaleDateString('lo-LA')}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ວັນເຊັກເອົາ</p>
+                                <p class="font-medium">${new Date(booking.checkout).toLocaleDateString('lo-LA')}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ຈຳນວນຄືນ</p>
+                                <p class="font-medium">${booking.nights} ຄືນ</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ລາຄາລວມ</p>
+                                <p class="font-medium text-pink-500">${booking.totalPrice}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-4 border-t">
+                            <div class="text-sm text-gray-500">
+                                ຈອງເມື່ອ: ${new Date(booking.bookingDate).toLocaleDateString('lo-LA')}
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200 text-sm view-detail-btn" data-booking='${JSON.stringify(booking)}'>
+                                    ເບິ່ງລາຍລະອຽດ
+                                </button>
+                                ${booking.status === 'confirmed' ? `
+                                    <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200 text-sm cancel-booking-btn" data-id="${booking.id}">
+                                        ຍົກເລີກ
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                historyList.innerHTML += bookingCard;
+            });
+            
+            // เพิ่ม event listener สำหรับปุ่มต่างๆ
+            document.querySelectorAll('.view-detail-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const booking = JSON.parse(btn.getAttribute('data-booking'));
+                    showBookingDetail(booking);
+                });
+            });
+            
+            document.querySelectorAll('.cancel-booking-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const bookingId = btn.getAttribute('data-id');
+                    cancelBooking(bookingId);
+                });
+            });
+        }
+        
+        // ฟังก์ชันแสดงรายละเอียดการจอง
+        function showBookingDetail(booking) {
+            const detailDiv = document.createElement('div');
+            detailDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            detailDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">ລາຍລະອຽດການຈອງ</h3>
+                        <button id="closeDetail" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600">ໂຮງແຮມ</p>
+                                <p class="font-medium">${booking.hotelName}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ທີ່ຕັ້ງ</p>
+                                <p class="font-medium">${booking.location}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ປະເພດຫ້ອງ</p>
+                                <p class="font-medium">${booking.roomType}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ຈຳນວນຜູ້ເຂົ້າພັກ</p>
+                                <p class="font-medium">${booking.guests} ຜູ້ໃຫຍ່</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ວັນເຊັກອິນ</p>
+                                <p class="font-medium">${new Date(booking.checkin).toLocaleDateString('lo-LA')}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">ວັນເຊັກເອົາ</p>
+                                <p class="font-medium">${new Date(booking.checkout).toLocaleDateString('lo-LA')}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <p class="text-sm text-gray-600 mb-2">ລາຄາ</p>
+                            <div class="space-y-1">
+                                <div class="flex justify-between">
+                                    <span>ລາຄາຕໍ່ຄືນ:</span>
+                                    <span>${booking.nightlyRate}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>ຈຳນວນຄືນ:</span>
+                                    <span>${booking.nights}</span>
+                                </div>
+                                <div class="flex justify-between font-bold text-pink-500">
+                                    <span>ລວມທັງໝົດ:</span>
+                                    <span>${booking.totalPrice}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-1">ລະຫັດການຈອງ</p>
+                            <p class="font-mono font-bold text-lg text-pink-500">${booking.id}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(detailDiv);
+            
+            document.getElementById('closeDetail').addEventListener('click', () => {
+                detailDiv.remove();
+            });
+        }
+        
+        // ฟังก์ชันยกเลิกการจอง
+        function cancelBooking(bookingId) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            confirmDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="text-center">
+                        <div class="text-red-500 text-4xl mb-4">⚠️</div>
+                        <h3 class="text-xl font-bold mb-2">ຢືນຢັນການຍົກເລີກ</h3>
+                        <p class="text-gray-600 mb-4">ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການຍົກເລີກການຈອງນີ້?</p>
+                        <div class="flex space-x-4">
+                            <button id="confirmCancel" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200">
+                                ຢືນຢັນຍົກເລີກ
+                            </button>
+                            <button id="cancelCancel" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                                ບໍ່ຍົກເລີກ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmDiv);
+            
+            document.getElementById('confirmCancel').addEventListener('click', () => {
+                // อัพเดทสถานะการจองใน localStorage
+                let bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+                const bookingIndex = bookingHistory.findIndex(b => b.id === bookingId);
+                if (bookingIndex !== -1) {
+                    bookingHistory[bookingIndex].status = 'cancelled';
+                    localStorage.setItem('bookingHistory', JSON.stringify(bookingHistory));
+                }
+                
+                confirmDiv.remove();
+                loadBookingHistory(); // โหลดประวัติใหม่
+                
+                // แสดงข้อความยืนยัน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '✅ ຍົກເລີກການຈອງສຳເລັດ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+            });
+            
+            document.getElementById('cancelCancel').addEventListener('click', () => {
+                confirmDiv.remove();
+            });
+        }
+
+        // จัดการการค้นหาประวัติ
+        document.getElementById('searchHistoryBtn').addEventListener('click', () => {
+            loadBookingHistory(); // สำหรับตัวอย่างนี้ แสดงทั้งหมด
+        });
+
+        // จัดการแท็บรายการโปรด
+        document.getElementById('favoriteTab').addEventListener('click', () => {
+            document.getElementById('hotelPage').classList.add('hidden');
+            document.getElementById('favoritePage').classList.remove('hidden');
+            loadFavorites();
+        });
+
+        // จัดการแท็บในหน้ารายการโปรด
+        document.getElementById('favoriteHomeTab').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+
+
+        document.getElementById('favoriteHistoryTab').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('historyPage').classList.remove('hidden');
+            loadBookingHistory();
+        });
+
+        document.getElementById('favoriteProfileTab').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('profilePage').classList.remove('hidden');
+            loadProfileData();
+        });
+
+        document.getElementById('backToHotelFromFavoriteBtn').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        document.getElementById('favoriteLogoutBtn').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        });
+
+        document.getElementById('browseFavoritesBtn').addEventListener('click', () => {
+            document.getElementById('favoritePage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        // จัดการแท็บโปรไฟล์
+        document.getElementById('profileTab').addEventListener('click', () => {
+            document.getElementById('hotelPage').classList.add('hidden');
+            document.getElementById('profilePage').classList.remove('hidden');
+            loadProfileData();
+        });
+
+        // จัดการแท็บในหน้าโปรไฟล์
+        document.getElementById('profileHomeTab').addEventListener('click', () => {
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+
+
+        document.getElementById('profileFavoriteTab').addEventListener('click', () => {
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('favoritePage').classList.remove('hidden');
+            loadFavorites();
+        });
+
+        document.getElementById('profileHistoryTab').addEventListener('click', () => {
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('historyPage').classList.remove('hidden');
+            loadBookingHistory();
+        });
+
+        document.getElementById('backToHotelFromProfileBtn').addEventListener('click', () => {
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('hotelPage').classList.remove('hidden');
+        });
+
+        document.getElementById('profileLogoutBtn').addEventListener('click', () => {
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+        });
+
+        // ฟังก์ชันโหลดรายการโปรด
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const favoritesList = document.getElementById('favoritesList');
+            const noFavoritesMessage = document.getElementById('noFavoritesMessage');
+            
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = '';
+                noFavoritesMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noFavoritesMessage.classList.add('hidden');
+            favoritesList.innerHTML = '';
+            
+            favorites.forEach(hotel => {
+                const favoriteCard = `
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg text-gray-800 mb-2">${hotel.name}</h3>
+                                <p class="text-gray-600 mb-2">📍 ${hotel.location}</p>
+                                <div class="flex items-center mb-2">
+                                    <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
+                                    <span class="text-sm text-gray-600 ml-2">(${hotel.rating})</span>
+                                </div>
+                                <div class="text-2xl font-bold text-pink-500">${hotel.price}<span class="text-sm text-gray-600 font-normal">/ຄືນ</span></div>
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <button class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition duration-200 text-sm view-hotel-btn" data-name="${hotel.name}" data-location="${hotel.location}" data-price="${hotel.price}" data-rating="${hotel.rating}">
+                                    ເບິ່ງລາຍລະອຽດ
+                                </button>
+                                <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200 text-sm remove-favorite-btn" data-name="${hotel.name}">
+                                    ລຶບອອກ
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <div class="text-sm text-gray-500">
+                                ເພີ່ມເມື່ອ: ${new Date(hotel.addedDate).toLocaleDateString('lo-LA')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                favoritesList.innerHTML += favoriteCard;
+            });
+            
+            // เพิ่ม event listener สำหรับปุ่มต่างๆ
+            document.querySelectorAll('.view-hotel-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.getAttribute('data-name');
+                    const location = btn.getAttribute('data-location');
+                    const price = btn.getAttribute('data-price');
+                    const rating = btn.getAttribute('data-rating');
+                    
+                    // อัพเดทข้อมูลในหน้ารายละเอียด
+                    document.getElementById('hotelDetailName').textContent = name;
+                    document.getElementById('hotelDetailLocation').textContent = `📍 ${location}`;
+                    
+                    // อัพเดทที่อยู่ตามโรงแรม
+                    const addresses = {
+                        'Grand Hotel Vientiane': 'ຖະໜົນ ສາມເສັນໄທ, ບ້ານ ວັດຈັນ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ',
+                        'Mekong River Resort': 'ຖະໜົນ ຊີສະວາງວົງ, ບ້ານ ວັດໂຊ, ເມືອງ ຫຼວງພະບາງ, ແຂວງ ຫຼວງພະບາງ',
+                        'Phou Bia Mountain Hotel': 'ຖະໜົນ ທ່ອງທ່ຽວ, ບ້ານ ວັງວຽງ, ເມືອງ ວັງວຽງ, ແຂວງ ວຽງຈັນ',
+                        'Settha Palace Hotel': 'ຖະໜົນ ປັງຄຳ, ບ້ານ ວັດອິນແປງ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ',
+                        'Ansara Hotel': 'ຖະໜົນ ຟ້າງຸ່ມ, ບ້ານ ວັດໂຊ, ເມືອງ ຫຼວງພະບາງ, ແຂວງ ຫຼວງພະບາງ',
+                        'Crowne Plaza': 'ຖະໜົນ ລານຊ້າງ, ບ້ານ ຫາດສະໜາມ, ເມືອງ ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ'
+                    };
+                    
+                    document.getElementById('hotelDetailAddress').textContent = `🏠 ${addresses[name] || 'ທີ່ຢູ່ລາຍລະອຽດຂອງໂຮງແຮມ'}`;
+                    document.getElementById('hotelDetailPrice').textContent = price;
+                    document.getElementById('hotelDetailRating').textContent = `(${rating}) • 245 ຄຳຕິຊົມ`;
+                    document.getElementById('hotelMainImage').innerHTML = `<span class="text-white text-2xl font-bold">🏨 ${name}</span>`;
+                    
+                    // แสดงหน้ารายละเอียด
+                    document.getElementById('favoritePage').classList.add('hidden');
+                    document.getElementById('hotelDetailPage').classList.remove('hidden');
+                    
+                    // อัพเดทสถานะปุ่มบันทึก
+                    setTimeout(() => updateSaveButtonState(), 100);
+                });
+            });
+            
+            document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const hotelName = btn.getAttribute('data-name');
+                    removeFavorite(hotelName);
+                });
+            });
+        }
+
+        // ฟังก์ชันเพิ่ม/ลบรายการโปรด
+        function toggleFavorite(hotel) {
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const existingIndex = favorites.findIndex(fav => fav.name === hotel.name);
+            
+            if (existingIndex !== -1) {
+                // ลบออกจากรายการโปรด
+                favorites.splice(existingIndex, 1);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                
+                // แสดงข้อความแจ้งเตือน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '💔 ລຶບອອກຈາກລາຍການທີ່ຮັກແລ້ວ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+                return false;
+            } else {
+                // เพิ่มเข้ารายการโปรด
+                hotel.addedDate = new Date().toISOString();
+                favorites.push(hotel);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                
+                // แสดงข้อความแจ้งเตือน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '❤️ ເພີ່ມເຂົ້າລາຍການທີ່ຮັກແລ້ວ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+                return true;
+            }
+        }
+
+        // ฟังก์ชันลบรายการโปรด
+        function removeFavorite(hotelName) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            confirmDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="text-center">
+                        <div class="text-red-500 text-4xl mb-4">💔</div>
+                        <h3 class="text-xl font-bold mb-2">ລຶບອອກຈາກລາຍການທີ່ຮັກ?</h3>
+                        <p class="text-gray-600 mb-4">ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບໂຮງແຮມນີ້ອອກ?</p>
+                        <div class="flex space-x-4">
+                            <button id="confirmRemoveFavorite" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200">
+                                ລຶບອອກ
+                            </button>
+                            <button id="cancelRemoveFavorite" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                                ຍົກເລີກ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmDiv);
+            
+            document.getElementById('confirmRemoveFavorite').addEventListener('click', () => {
+                let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+                favorites = favorites.filter(fav => fav.name !== hotelName);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                
+                confirmDiv.remove();
+                loadFavorites(); // โหลดรายการใหม่
+                
+                // แสดงข้อความยืนยัน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '💔 ລຶບອອກຈາກລາຍການທີ່ຮັກແລ້ວ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+            });
+            
+            document.getElementById('cancelRemoveFavorite').addEventListener('click', () => {
+                confirmDiv.remove();
+            });
+        }
+
+        // ฟังก์ชันโหลดข้อมูลโปรไฟล์
+        function loadProfileData() {
+            // โหลดข้อมูลจาก localStorage หรือใช้ค่าเริ่มต้น
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            
+            // อัพเดทข้อมูลในหน้าโปรไฟล์
+            document.getElementById('profileUserName').textContent = profileData.name || 'ຜູ້ໃຊ້';
+            document.getElementById('profileUserEmail').textContent = profileData.email || 'user@example.com';
+            
+            document.getElementById('displayName').textContent = profileData.name || 'ຜູ້ໃຊ້ລະບົບ';
+            document.getElementById('displayEmail').textContent = profileData.email || 'user@example.com';
+            document.getElementById('displayPhone').textContent = profileData.phone || '020 12345678';
+            document.getElementById('displayBirthdate').textContent = profileData.birthdate || '01/01/1990';
+            document.getElementById('displayGender').textContent = profileData.gender || 'ຊາຍ';
+            document.getElementById('displayAddress').textContent = profileData.address || 'ວຽງຈັນ, ລາວ';
+            
+            // อัพเดทฟอร์มแก้ไข
+            document.getElementById('editName').value = profileData.name || 'ຜູ້ໃຊ້ລະບົບ';
+            document.getElementById('editEmail').value = profileData.email || 'user@example.com';
+            document.getElementById('editPhone').value = profileData.phone || '020 12345678';
+            document.getElementById('editBirthdate').value = profileData.birthdateISO || '1990-01-01';
+            document.getElementById('editGender').value = profileData.genderValue || 'male';
+            document.getElementById('editAddress').value = profileData.address || 'ວຽງຈັນ, ລາວ';
+            
+            // อัพเดทสถิติ
+            const bookingHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            
+            document.getElementById('totalBookings').textContent = bookingHistory.length;
+            document.getElementById('totalFavorites').textContent = favorites.length;
+            
+            // คำนวณยอดเงินรวม
+            const totalSpent = bookingHistory.reduce((sum, booking) => {
+                const price = parseInt(booking.totalPrice.replace(/[₭,]/g, ''));
+                return sum + price;
+            }, 0);
+            document.getElementById('totalSpent').textContent = `₭${totalSpent.toLocaleString()}`;
+            
+            document.getElementById('memberSince').textContent = profileData.memberSince || '2024';
+        }
+
+        // จัดการการแก้ไขโปรไฟล์
+        document.getElementById('editProfileBtn').addEventListener('click', () => {
+            document.getElementById('profileView').classList.add('hidden');
+            document.getElementById('profileEditForm').classList.remove('hidden');
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('profileEditForm').classList.add('hidden');
+            document.getElementById('profileView').classList.remove('hidden');
+        });
+
+        document.getElementById('profileEditForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const genderMap = {
+                'male': 'ຊາຍ',
+                'female': 'ຍິງ',
+                'other': 'ອື່ນໆ'
+            };
+            
+            const profileData = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+                birthdate: new Date(document.getElementById('editBirthdate').value).toLocaleDateString('lo-LA'),
+                birthdateISO: document.getElementById('editBirthdate').value,
+                gender: genderMap[document.getElementById('editGender').value],
+                genderValue: document.getElementById('editGender').value,
+                address: document.getElementById('editAddress').value,
+                memberSince: '2024'
+            };
+            
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
+            // อัพเดทการแสดงผล
+            loadProfileData();
+            
+            // ซ่อนฟอร์มแก้ไข
+            document.getElementById('profileEditForm').classList.add('hidden');
+            document.getElementById('profileView').classList.remove('hidden');
+            
+            // แสดงข้อความยืนยัน
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notifyDiv.textContent = '✅ ບັນທຶກຂໍ້ມູນສຳເລັດ';
+            document.body.appendChild(notifyDiv);
+            
+            setTimeout(() => notifyDiv.remove(), 3000);
+        });
+
+        // จัดการการเปลี่ยนรหัสผ่าน
+        document.getElementById('changePasswordBtn').addEventListener('click', () => {
+            const passwordDiv = document.createElement('div');
+            passwordDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            passwordDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">ປ່ຽນລະຫັດຜ່ານ</h3>
+                    <form id="changePasswordForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ລະຫັດຜ່ານເກົ່າ</label>
+                            <input type="password" id="oldPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ລະຫັດຜ່ານໃໝ່</label>
+                            <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ຢືນຢັນລະຫັດຜ່ານໃໝ່</label>
+                            <input type="password" id="confirmNewPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="submit" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200">
+                                ປ່ຽນລະຫັດຜ່ານ
+                            </button>
+                            <button type="button" id="cancelPasswordChange" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+                                ຍົກເລີກ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(passwordDiv);
+            
+            document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmNewPassword').value;
+                
+                if (newPassword !== confirmPassword) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+                    errorDiv.textContent = 'ລະຫັດຜ່ານໃໝ່ບໍ່ຕົງກັນ';
+                    document.getElementById('changePasswordForm').insertBefore(errorDiv, document.getElementById('changePasswordForm').firstChild);
+                    setTimeout(() => errorDiv.remove(), 3000);
+                    return;
+                }
+                
+                passwordDiv.remove();
+                
+                // แสดงข้อความยืนยัน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '🔒 ປ່ຽນລະຫັດຜ່ານສຳເລັດ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+            });
+            
+            document.getElementById('cancelPasswordChange').addEventListener('click', () => {
+                passwordDiv.remove();
+            });
+        });
+
+        // จัดการการลบบัญชี
+        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+            const deleteDiv = document.createElement('div');
+            deleteDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            deleteDiv.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="text-center">
+                        <div class="text-red-500 text-4xl mb-4">⚠️</div>
+                        <h3 class="text-xl font-bold mb-2">ລຶບບັນຊີ</h3>
+                        <p class="text-gray-600 mb-4">ການກະທຳນີ້ບໍ່ສາມາດຍົກເລີກໄດ້ ຂໍ້ມູນທັງໝົດຈະຖືກລຶບຖາວອນ</p>
+                        <div class="flex space-x-4">
+                            <button id="confirmDeleteAccount" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200">
+                                ລຶບບັນຊີ
+                            </button>
+                            <button id="cancelDeleteAccount" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                                ຍົກເລີກ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(deleteDiv);
+            
+            document.getElementById('confirmDeleteAccount').addEventListener('click', () => {
+                // ลบข้อมูลทั้งหมด
+                localStorage.removeItem('profileData');
+                localStorage.removeItem('bookingHistory');
+                localStorage.removeItem('favorites');
+                
+                deleteDiv.remove();
+                
+                // กลับไปหน้าล็อกอิน
+                document.getElementById('profilePage').classList.add('hidden');
+                document.getElementById('authPage').classList.remove('hidden');
+                
+                // แสดงข้อความยืนยัน
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                notifyDiv.textContent = '🗑️ ລຶບບັນຊີສຳເລັດ';
+                document.body.appendChild(notifyDiv);
+                
+                setTimeout(() => notifyDiv.remove(), 3000);
+            });
+            
+            document.getElementById('cancelDeleteAccount').addEventListener('click', () => {
+                deleteDiv.remove();
+            });
+        });
+
+        // จัดการการกรองรายการโปรด
+        document.getElementById('filterFavoritesBtn').addEventListener('click', () => {
+            loadFavorites(); // สำหรับตัวอย่างนี้ แสดงทั้งหมด
+        });
+
+        // จัดการปุ่มบันทึกโรงแรม
+        document.getElementById('saveHotelBtn').addEventListener('click', () => {
+            const hotelName = document.getElementById('hotelDetailName').textContent;
+            const hotelLocation = document.getElementById('hotelDetailLocation').textContent.replace('📍 ', '');
+            const hotelPrice = document.getElementById('hotelDetailPrice').textContent;
+            const hotelRating = document.getElementById('hotelDetailRating').textContent.match(/\(([\d.]+)\)/)[1];
+            
+            const hotel = {
+                name: hotelName,
+                location: hotelLocation,
+                price: hotelPrice,
+                rating: hotelRating
+            };
+            
+            const isFavorited = toggleFavorite(hotel);
+            
+            // อัพเดทปุ่ม
+            const saveBtn = document.getElementById('saveHotelBtn');
+            const saveText = document.getElementById('saveButtonText');
+            
+            if (isFavorited) {
+                saveBtn.classList.remove('bg-white', 'bg-opacity-20');
+                saveBtn.classList.add('bg-red-500');
+                saveText.textContent = 'ລຶບອອກ';
+            } else {
+                saveBtn.classList.remove('bg-red-500');
+                saveBtn.classList.add('bg-white', 'bg-opacity-20');
+                saveText.textContent = 'ບັນທຶກ';
+            }
+        });
+
+        // ฟังก์ชันตรวจสอบสถานะรายการโปรดเมื่อเปิดหน้ารายละเอียด
+        function updateSaveButtonState() {
+            const hotelName = document.getElementById('hotelDetailName').textContent;
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const isFavorited = favorites.some(fav => fav.name === hotelName);
+            
+            const saveBtn = document.getElementById('saveHotelBtn');
+            const saveText = document.getElementById('saveButtonText');
+            
+            if (isFavorited) {
+                saveBtn.classList.remove('bg-white', 'bg-opacity-20');
+                saveBtn.classList.add('bg-red-500');
+                saveText.textContent = 'ລຶບອອກ';
+            } else {
+                saveBtn.classList.remove('bg-red-500');
+                saveBtn.classList.add('bg-white', 'bg-opacity-20');
+                saveText.textContent = 'ບັນທຶກ';
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9921b59616d3ce4d',t:'MTc2MTA1OTcxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
